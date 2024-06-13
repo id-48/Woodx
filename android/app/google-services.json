@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "852701298654",
+    "project_id": "woodx-a7183",
+    "storage_bucket": "woodx-a7183.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:852701298654:android:6734cf35a157b9e872e74f",
+        "android_client_info": {
+          "package_name": "com.woodx.vip"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwcmgq6eIY9rBB6p8FfaJdWtaq9ukxEjo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
