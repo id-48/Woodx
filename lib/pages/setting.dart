@@ -43,6 +43,7 @@ class SettingState extends State<Setting> {
   late GeneralProvider generalProvider;
   SharedPre sharedPref = SharedPre();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  String email = "";
 
   @override
   void initState() {
@@ -73,9 +74,11 @@ class SettingState extends State<Setting> {
     userName = await sharedPref.read("username");
     userType = await sharedPref.read("usertype");
     userMobileNo = await sharedPref.read("usermobile");
+    email = await sharedPref.read("useremail") ?? '';
     log('getUserData userName ==> $userName');
     log('getUserData userType ==> $userType');
     log('getUserData userMobileNo ==> $userMobileNo');
+    log('email ==> $email');
 
     await generalProvider.getPages();
 
@@ -362,8 +365,7 @@ class SettingState extends State<Setting> {
                     onTap: () async {
                       if (!(kIsWeb || Constant.isTV)) Utils.deleteCacheDir();
                       if (!mounted) return;
-                      Utils.showSnackbar(
-                          context, "success", "cacheclearmsg", true);
+                      Utils.showSnackbar(context, "success", "cacheclearmsg", true);
                     },
                     child: Container(
                       width: MediaQuery.of(context).size.width,
@@ -423,6 +425,8 @@ class SettingState extends State<Setting> {
                     if (Constant.userID != null) {
                       logoutConfirmDialog();
                     } else {
+                      await sharedPref.clear();
+                      await FirebaseAuth.instance.signOut();
                       await Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => const LoginSocial(),
@@ -432,12 +436,18 @@ class SettingState extends State<Setting> {
                     }
                   },
                   child: _buildSettingButton(
-                    title: Constant.userID == null
-                        ? youAreNotSignIn
-                        : (userType == "3" && (userName ?? "").isEmpty)
-                            ? ("$signedInAs ${userMobileNo ?? ""}")
-                            : ("$signedInAs ${userName ?? ""}"),
-                    subTitle: Constant.userID == null ? "sign_in" : "sign_out",
+                    title: email.isNotEmpty
+                        ? ("$signedInAs ${email ?? ""}")
+                        : Constant.userID == null
+                            ? youAreNotSignIn
+                            : (userType == "3" && (userName ?? "").isEmpty)
+                                ? ("$signedInAs ${userMobileNo ?? ""}")
+                                : ("$signedInAs ${userName ?? ""}"),
+                    subTitle: email.isNotEmpty
+                        ? "sign_out"
+                        : Constant.userID == null
+                            ? "sign_in"
+                            : "sign_out",
                     titleMultilang: false,
                     subTitleMultilang: true,
                   ),
@@ -464,9 +474,8 @@ class SettingState extends State<Setting> {
                 InkWell(
                   borderRadius: BorderRadius.circular(2),
                   onTap: () async {
-                    await Utils.shareApp(Platform.isIOS
-                        ? Constant.iosAppShareUrlDesc
-                        : Constant.androidAppShareUrlDesc);
+                    await Utils.shareApp(
+                        Platform.isIOS ? Constant.iosAppShareUrlDesc : Constant.androidAppShareUrlDesc);
                   },
                   child: _buildSettingButton(
                     title: 'shareapp',
@@ -516,8 +525,7 @@ class SettingState extends State<Setting> {
     if (generalProvider.loading) {
       return const SizedBox.shrink();
     } else {
-      if (generalProvider.pagesModel.status == 200 &&
-          generalProvider.pagesModel.result != null) {
+      if (generalProvider.pagesModel.status == 200 && generalProvider.pagesModel.result != null) {
         return AlignedGridView.count(
           shrinkWrap: true,
           crossAxisCount: 1,
@@ -535,20 +543,14 @@ class SettingState extends State<Setting> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => AboutPrivacyTerms(
-                          appBarTitle: generalProvider
-                                  .pagesModel.result?[position].pageName ??
-                              '',
-                          loadURL: generalProvider
-                                  .pagesModel.result?[position].url ??
-                              '',
+                          appBarTitle: generalProvider.pagesModel.result?[position].pageName ?? '',
+                          loadURL: generalProvider.pagesModel.result?[position].url ?? '',
                         ),
                       ),
                     );
                   },
                   child: _buildSettingButton(
-                    title:
-                        generalProvider.pagesModel.result?[position].pageName ??
-                            '',
+                    title: generalProvider.pagesModel.result?[position].pageName ?? '',
                     subTitle: '',
                     titleMultilang: false,
                     subTitleMultilang: false,
@@ -701,8 +703,7 @@ class SettingState extends State<Setting> {
                                 minWidth: MediaQuery.of(context).size.width,
                               ),
                               height: 48,
-                              padding:
-                                  const EdgeInsets.only(left: 10, right: 10),
+                              padding: const EdgeInsets.only(left: 10, right: 10),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 border: Border.all(
@@ -740,8 +741,7 @@ class SettingState extends State<Setting> {
                                 minWidth: MediaQuery.of(context).size.width,
                               ),
                               height: 48,
-                              padding:
-                                  const EdgeInsets.only(left: 10, right: 10),
+                              padding: const EdgeInsets.only(left: 10, right: 10),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 border: Border.all(
@@ -779,8 +779,7 @@ class SettingState extends State<Setting> {
                                 minWidth: MediaQuery.of(context).size.width,
                               ),
                               height: 48,
-                              padding:
-                                  const EdgeInsets.only(left: 10, right: 10),
+                              padding: const EdgeInsets.only(left: 10, right: 10),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 border: Border.all(
@@ -818,8 +817,7 @@ class SettingState extends State<Setting> {
                                 minWidth: MediaQuery.of(context).size.width,
                               ),
                               height: 48,
-                              padding:
-                                  const EdgeInsets.only(left: 10, right: 10),
+                              padding: const EdgeInsets.only(left: 10, right: 10),
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 border: Border.all(
@@ -947,18 +945,18 @@ class SettingState extends State<Setting> {
                         const SizedBox(width: 20),
                         InkWell(
                           onTap: () async {
-                            final homeProvider = Provider.of<HomeProvider>(
-                                context,
-                                listen: false);
-                            final sectionDataProvider =
-                                Provider.of<SectionDataProvider>(context,
-                                    listen: false);
+                            final homeProvider = Provider.of<HomeProvider>(context, listen: false);
+                            final sectionDataProvider = Provider.of<SectionDataProvider>(context, listen: false);
                             await homeProvider.setSelectedTab(0);
                             await sectionDataProvider.clearProvider();
                             // Firebase Signout
                             await _auth.signOut();
                             await GoogleSignIn().signOut();
                             await Utils.setUserId(null);
+                            await FirebaseAuth.instance.signOut();
+                            await sharedPref.clear();
+                            await FirebaseAuth.instance.signOut();
+
                             sectionDataProvider.getSectionBanner("0", "1");
                             sectionDataProvider.getSectionList("0", "1");
                             getUserData();
@@ -1100,12 +1098,8 @@ class SettingState extends State<Setting> {
                         const SizedBox(width: 20),
                         InkWell(
                           onTap: () async {
-                            final homeProvider = Provider.of<HomeProvider>(
-                                context,
-                                listen: false);
-                            final sectionDataProvider =
-                                Provider.of<SectionDataProvider>(context,
-                                    listen: false);
+                            final homeProvider = Provider.of<HomeProvider>(context, listen: false);
+                            final sectionDataProvider = Provider.of<SectionDataProvider>(context, listen: false);
                             await homeProvider.setSelectedTab(0);
                             await sectionDataProvider.clearProvider();
                             // Firebase Signout

@@ -30,6 +30,7 @@ import 'package:wood_vip/provider/sectionbytypeprovider.dart';
 import 'package:wood_vip/provider/sectiondataprovider.dart';
 import 'package:wood_vip/provider/showdetailsprovider.dart';
 import 'package:wood_vip/provider/showdownloadprovider.dart';
+import 'package:wood_vip/provider/signup_provider.dart';
 import 'package:wood_vip/provider/subhistoryprovider.dart';
 import 'package:wood_vip/provider/subscriptionprovider.dart';
 import 'package:wood_vip/provider/videobyidprovider.dart';
@@ -95,6 +96,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => VideoDetailsProvider()),
         ChangeNotifierProvider(create: (_) => VideoDownloadProvider()),
         ChangeNotifierProvider(create: (_) => WatchlistProvider()),
+        ChangeNotifierProvider(create: (_) => SignUpProvider()),
       ],
       child: const MyApp(),
     ),

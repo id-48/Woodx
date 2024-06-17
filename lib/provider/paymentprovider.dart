@@ -8,6 +8,9 @@ import 'package:wood_vip/model/successmodel.dart';
 import 'package:wood_vip/utils/constant.dart';
 import 'package:wood_vip/webservice/apiservices.dart';
 
+import '../subscription/web_view/deposit_payment_webview.dart';
+import '../utils/sharedpre.dart';
+
 class PaymentProvider extends ChangeNotifier {
   PaymentOptionModel paymentOptionModel = PaymentOptionModel();
   PayTmModel payTmModel = PayTmModel();
@@ -16,6 +19,10 @@ class PaymentProvider extends ChangeNotifier {
 
   bool loading = false, payLoading = false, couponLoading = false;
   String? currentPayment = "", finalAmount = "";
+  SharedPre pref = SharedPre();
+  String amount = "";
+  String userId = "";
+  String packageId = "";
 
   Future<void> getPaymentOption() async {
     loading = true;
@@ -37,16 +44,14 @@ class PaymentProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> applyRentCouponCode(
-      couponCode, videoId, typeId, videoType, price) async {
+  Future<void> applyRentCouponCode(couponCode, videoId, typeId, videoType, price) async {
     debugPrint("applyRentCouponCode couponCode :==> $couponCode");
     debugPrint("applyRentCouponCode videoId :==> $videoId");
     debugPrint("applyRentCouponCode typeId :==> $typeId");
     debugPrint("applyRentCouponCode videoType :==> $videoType");
     debugPrint("applyRentCouponCode price :==> $price");
     couponLoading = true;
-    couponModel = await ApiService()
-        .applyRentCoupon(couponCode, videoId, typeId, videoType, price);
+    couponModel = await ApiService().applyRentCoupon(couponCode, videoId, typeId, videoType, price);
     debugPrint("applyRentCouponCode status :==> ${couponModel.status}");
     debugPrint("applyRentCouponCode message :==> ${couponModel.message}");
     couponLoading = false;
@@ -59,8 +64,8 @@ class PaymentProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getPaytmToken(merchantID, orderId, custmoreID, channelID,
-      txnAmount, website, callbackURL, industryTypeID) async {
+  Future<void> getPaytmToken(
+      merchantID, orderId, custmoreID, channelID, txnAmount, website, callbackURL, industryTypeID) async {
     debugPrint("getPaytmToken merchantID :=======> $merchantID");
     debugPrint("getPaytmToken orderId :==========> $orderId");
     debugPrint("getPaytmToken custmoreID :=======> $custmoreID");
@@ -70,36 +75,33 @@ class PaymentProvider extends ChangeNotifier {
     debugPrint("getPaytmToken callbackURL :======> $merchantID");
     debugPrint("getPaytmToken industryTypeID :===> $industryTypeID");
     loading = true;
-    payTmModel = await ApiService().getPaytmToken(merchantID, orderId,
-        custmoreID, channelID, txnAmount, website, callbackURL, industryTypeID);
+    payTmModel = await ApiService()
+        .getPaytmToken(merchantID, orderId, custmoreID, channelID, txnAmount, website, callbackURL, industryTypeID);
     debugPrint("getPaytmToken status :===> ${payTmModel.status}");
     debugPrint("getPaytmToken message :==> ${payTmModel.message}");
     loading = false;
     notifyListeners();
   }
 
-  Future<void> addTransaction(packageId, description, amount, paymentId,
-      currencyCode, couponCode) async {
+  Future<void> addTransaction(packageId, description, amount, paymentId, currencyCode, couponCode) async {
     debugPrint("addTransaction userID :==> ${Constant.userID}");
     debugPrint("addTransaction packageId :==> $packageId");
     debugPrint("addTransaction couponCode :==> $couponCode");
     payLoading = true;
-    successModel = await ApiService().addTransaction(
-        packageId, description, amount, paymentId, currencyCode, couponCode);
+    successModel =
+        await ApiService().addTransaction(packageId, description, amount, paymentId, currencyCode, couponCode);
     debugPrint("addTransaction status :==> ${successModel.status}");
     debugPrint("addTransaction message :==> ${successModel.message}");
     payLoading = false;
     notifyListeners();
   }
 
-  Future<void> addRentTransaction(
-      videoId, amount, typeId, videoType, couponCode) async {
+  Future<void> addRentTransaction(videoId, amount, typeId, videoType, couponCode) async {
     debugPrint("addRentTransaction userID :==> ${Constant.userID}");
     debugPrint("addRentTransaction videoId :==> $videoId");
     debugPrint("addRentTransaction couponCode :==> $couponCode");
     payLoading = true;
-    successModel = await ApiService()
-        .addRentTransaction(videoId, amount, typeId, videoType, couponCode);
+    successModel = await ApiService().addRentTransaction(videoId, amount, typeId, videoType, couponCode);
     debugPrint("addRentTransaction status :==> ${successModel.status}");
     debugPrint("addRentTransaction message :==> ${successModel.message}");
     payLoading = false;
@@ -117,5 +119,31 @@ class PaymentProvider extends ChangeNotifier {
     finalAmount = "";
     paymentOptionModel = PaymentOptionModel();
     successModel = SuccessModel();
+  }
+
+  onPhonePaySelect({required BuildContext context}) async {
+    amount = await pref.read("amount");
+    userId = await pref.read("userId");
+    packageId = await pref.read("packageId");
+    print('Amount :: $amount\n User Id :: $userId\n Package Id :${packageId}');
+    notifyListeners();
+    if (amount.isNotEmpty && userId.isNotEmpty && packageId.isNotEmpty) {
+      var resBuyPlan = await ApiService().phonePayApiCall(userId: userId, amount: "${amount}00", packageId: packageId);
+      await pref.remove("amount");
+      await pref.remove("userId");
+      await pref.remove("packageId");
+      if (resBuyPlan.data != null) {
+        if (resBuyPlan.data.paymentId != null) {
+          if (resBuyPlan.data.paymentId.isNotEmpty) {
+            await pref.save("prePlanPaymentId", resBuyPlan.data.paymentId);
+          }
+        }
+
+        if (resBuyPlan.data.url.isNotEmpty) {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => CustomWebViewScreen(redirectUrl: resBuyPlan.data.url)));
+        }
+      }
+    }
   }
 }

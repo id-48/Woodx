@@ -57,7 +57,7 @@ class _LoginSocialWebState extends State<LoginSocialWeb> {
                   alignment: Alignment.centerLeft,
                   child: MyImage(
                     fit: BoxFit.contain,
-                    imagePath: "appicon.png",
+                    imagePath: "ic_stat_onesignal_default.png",
                   ),
                 ),
                 InkWell(

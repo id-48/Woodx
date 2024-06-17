@@ -268,7 +268,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
             child: MyImage(
               width: 68,
               height: 68,
-              imagePath: "appicon.png",
+              imagePath: "ic_stat_onesignal_default.png",
             ),
           ),
 

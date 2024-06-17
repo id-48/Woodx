@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_paypal/flutter_paypal.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -35,14 +36,7 @@ import 'package:wood_vip/widget/nodata.dart';
 final bool _kAutoConsume = Platform.isIOS || true;
 
 class AllPayment extends StatefulWidget {
-  final String? payType,
-      itemId,
-      price,
-      itemTitle,
-      typeId,
-      videoType,
-      productPackage,
-      currency;
+  final String? payType, itemId, price, itemTitle, typeId, videoType, productPackage, currency;
 
   const AllPayment({
     Key? key,
@@ -96,10 +90,8 @@ class AllPaymentState extends State<AllPayment> {
     /* In-App Purchase */
     if (!kIsWeb) {
       _kProductIds = <String>[androidPackageID];
-      final Stream<List<PurchaseDetails>> purchaseUpdated =
-          _inAppPurchase.purchaseStream;
-      _subscription =
-          purchaseUpdated.listen((List<PurchaseDetails> purchaseDetailsList) {
+      final Stream<List<PurchaseDetails>> purchaseUpdated = _inAppPurchase.purchaseStream;
+      _subscription = purchaseUpdated.listen((List<PurchaseDetails> purchaseDetailsList) {
         _listenToPurchaseUpdated(purchaseDetailsList);
       }, onDone: () {
         _subscription.cancel();
@@ -142,8 +134,7 @@ class AllPaymentState extends State<AllPayment> {
     if (!kIsWeb) {
       if (Platform.isIOS) {
         final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
-            _inAppPurchase
-                .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+            _inAppPurchase.getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
         iosPlatformAddition.setDelegate(null);
       }
       _subscription.cancel();
@@ -153,18 +144,13 @@ class AllPaymentState extends State<AllPayment> {
   }
 
   /* add_transaction API */
-  Future addTransaction(
-      packageId, description, amount, paymentId, currencyCode) async {
-    final videoDetailsProvider =
-        Provider.of<VideoDetailsProvider>(context, listen: false);
-    final showDetailsProvider =
-        Provider.of<ShowDetailsProvider>(context, listen: false);
-    final channelSectionProvider =
-        Provider.of<ChannelSectionProvider>(context, listen: false);
+  Future addTransaction(packageId, description, amount, paymentId, currencyCode) async {
+    final videoDetailsProvider = Provider.of<VideoDetailsProvider>(context, listen: false);
+    final showDetailsProvider = Provider.of<ShowDetailsProvider>(context, listen: false);
+    final channelSectionProvider = Provider.of<ChannelSectionProvider>(context, listen: false);
 
     Utils.showProgress(context, prDialog);
-    await paymentProvider.addTransaction(
-        packageId, description, amount, paymentId, currencyCode, strCouponCode);
+    await paymentProvider.addTransaction(packageId, description, amount, paymentId, currencyCode, strCouponCode);
 
     if (!paymentProvider.payLoading) {
       await prDialog.hide();
@@ -182,22 +168,18 @@ class AllPaymentState extends State<AllPayment> {
       } else {
         isPaymentDone = false;
         if (!mounted) return;
-        Utils.showSnackbar(
-            context, "info", paymentProvider.successModel.message ?? "", false);
+        Utils.showSnackbar(context, "info", paymentProvider.successModel.message ?? "", false);
       }
     }
   }
 
   /* add_rent_transaction API */
   Future addRentTransaction(videoId, amount, typeId, videoType) async {
-    final videoDetailsProvider =
-        Provider.of<VideoDetailsProvider>(context, listen: false);
-    final showDetailsProvider =
-        Provider.of<ShowDetailsProvider>(context, listen: false);
+    final videoDetailsProvider = Provider.of<VideoDetailsProvider>(context, listen: false);
+    final showDetailsProvider = Provider.of<ShowDetailsProvider>(context, listen: false);
 
     Utils.showProgress(context, prDialog);
-    await paymentProvider.addRentTransaction(
-        videoId, amount, typeId, videoType, strCouponCode);
+    await paymentProvider.addRentTransaction(videoId, amount, typeId, videoType, strCouponCode);
 
     if (!paymentProvider.payLoading) {
       await prDialog.hide();
@@ -215,8 +197,7 @@ class AllPaymentState extends State<AllPayment> {
       } else {
         isPaymentDone = false;
         if (!mounted) return;
-        Utils.showSnackbar(
-            context, "info", paymentProvider.successModel.message ?? "", true);
+        Utils.showSnackbar(context, "info", paymentProvider.successModel.message ?? "", true);
       }
     }
   }
@@ -227,50 +208,41 @@ class AllPaymentState extends State<AllPayment> {
     Utils.showProgress(context, prDialog);
     if (widget.payType == "Package") {
       /* Package Coupon */
-      await paymentProvider.applyPackageCouponCode(
-          strCouponCode, widget.itemId);
+      await paymentProvider.applyPackageCouponCode(strCouponCode, widget.itemId);
 
       if (!paymentProvider.couponLoading) {
         await prDialog.hide();
         if (paymentProvider.couponModel.status == 200) {
           couponController.clear();
-          await paymentProvider.setFinalAmount(
-              paymentProvider.couponModel.result?.discountAmount.toString());
-          strCouponCode =
-              paymentProvider.couponModel.result?.uniqueId.toString();
+          await paymentProvider.setFinalAmount(paymentProvider.couponModel.result?.discountAmount.toString());
+          strCouponCode = paymentProvider.couponModel.result?.uniqueId.toString();
           log("strCouponCode =============> $strCouponCode");
           log("finalAmount =============> ${paymentProvider.finalAmount}");
           if (!mounted) return;
-          Utils.showSnackbar(context, "success",
-              paymentProvider.couponModel.message ?? "", false);
+          Utils.showSnackbar(context, "success", paymentProvider.couponModel.message ?? "", false);
         } else {
           if (!mounted) return;
-          Utils.showSnackbar(context, "fail",
-              paymentProvider.couponModel.message ?? "", false);
+          Utils.showSnackbar(context, "fail", paymentProvider.couponModel.message ?? "", false);
         }
       }
     } else if (widget.payType == "Rent") {
       /* Rent Coupon */
-      await paymentProvider.applyRentCouponCode(strCouponCode, widget.itemId,
-          widget.typeId, widget.videoType, widget.price);
+      await paymentProvider.applyRentCouponCode(
+          strCouponCode, widget.itemId, widget.typeId, widget.videoType, widget.price);
 
       if (!paymentProvider.couponLoading) {
         await prDialog.hide();
         if (paymentProvider.couponModel.status == 200) {
           couponController.clear();
-          await paymentProvider.setFinalAmount(
-              paymentProvider.couponModel.result?.discountAmount.toString());
-          strCouponCode =
-              paymentProvider.couponModel.result?.uniqueId.toString();
+          await paymentProvider.setFinalAmount(paymentProvider.couponModel.result?.discountAmount.toString());
+          strCouponCode = paymentProvider.couponModel.result?.uniqueId.toString();
           log("strCouponCode =============> $strCouponCode");
           log("finalAmount =============> ${paymentProvider.finalAmount}");
           if (!mounted) return;
-          Utils.showSnackbar(context, "success",
-              paymentProvider.couponModel.message ?? "", false);
+          Utils.showSnackbar(context, "success", paymentProvider.couponModel.message ?? "", false);
         } else {
           if (!mounted) return;
-          Utils.showSnackbar(context, "fail",
-              paymentProvider.couponModel.message ?? "", false);
+          Utils.showSnackbar(context, "fail", paymentProvider.couponModel.message ?? "", false);
         }
       }
     } else {
@@ -299,11 +271,9 @@ class AllPaymentState extends State<AllPayment> {
       }
     } else {
       if (widget.payType == "Package") {
-        addTransaction(widget.itemId, widget.itemTitle,
-            paymentProvider.finalAmount, paymentId, widget.currency);
+        addTransaction(widget.itemId, widget.itemTitle, paymentProvider.finalAmount, paymentId, widget.currency);
       } else if (widget.payType == "Rent") {
-        addRentTransaction(widget.itemId, paymentProvider.finalAmount,
-            widget.typeId, widget.videoType);
+        addRentTransaction(widget.itemId, paymentProvider.finalAmount, widget.typeId, widget.videoType);
       }
     }
   }
@@ -319,9 +289,7 @@ class AllPaymentState extends State<AllPayment> {
   Widget _buildPage() {
     return Scaffold(
       backgroundColor: appBgColor,
-      appBar: (kIsWeb || Constant.isTV)
-          ? null
-          : Utils.myAppBarWithBack(context, "payment_details", true),
+      appBar: (kIsWeb || Constant.isTV) ? null : Utils.myAppBarWithBack(context, "payment_details", true),
       body: SafeArea(
         child: Center(
           child: _buildMobilePage(),
@@ -332,13 +300,10 @@ class AllPaymentState extends State<AllPayment> {
 
   Widget _buildMobilePage() {
     return Container(
-      width:
-          ((kIsWeb || Constant.isTV) && MediaQuery.of(context).size.width > 720)
-              ? MediaQuery.of(context).size.width * 0.5
-              : MediaQuery.of(context).size.width,
-      margin: (kIsWeb || Constant.isTV)
-          ? const EdgeInsets.fromLTRB(50, 0, 50, 50)
-          : const EdgeInsets.all(0),
+      width: ((kIsWeb || Constant.isTV) && MediaQuery.of(context).size.width > 720)
+          ? MediaQuery.of(context).size.width * 0.5
+          : MediaQuery.of(context).size.width,
+      margin: (kIsWeb || Constant.isTV) ? const EdgeInsets.fromLTRB(50, 0, 50, 50) : const EdgeInsets.all(0),
       alignment: Alignment.center,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -386,8 +351,7 @@ class AllPaymentState extends State<AllPayment> {
                               ),
                               children: <TextSpan>[
                                 TextSpan(
-                                  text:
-                                      "${Constant.currencySymbol}${paymentProvider.finalAmount ?? ""}",
+                                  text: "${Constant.currencySymbol}${paymentProvider.finalAmount ?? ""}",
                                   style: GoogleFonts.montserrat(
                                     textStyle: const TextStyle(
                                       color: black,
@@ -422,10 +386,8 @@ class AllPaymentState extends State<AllPayment> {
                   : paymentProvider.paymentOptionModel.status == 200
                       ? paymentProvider.paymentOptionModel.result != null
                           ? ((kIsWeb) ? _buildWebPayments() : _buildPayments())
-                          : const NoData(
-                              title: 'no_payment', subTitle: 'no_payment_desc')
-                      : const NoData(
-                          title: 'no_payment', subTitle: 'no_payment_desc'),
+                          : const NoData(title: 'no_payment', subTitle: 'no_payment_desc')
+                      : const NoData(title: 'no_payment', subTitle: 'no_payment_desc'),
             ),
           ),
         ],
@@ -482,8 +444,7 @@ class AllPaymentState extends State<AllPayment> {
                             ),
                             children: <TextSpan>[
                               TextSpan(
-                                text:
-                                    "${Constant.currencySymbol}${paymentProvider.finalAmount ?? ""}",
+                                text: "${Constant.currencySymbol}${paymentProvider.finalAmount ?? ""}",
                                 style: GoogleFonts.montserrat(
                                   textStyle: const TextStyle(
                                     color: black,
@@ -518,10 +479,8 @@ class AllPaymentState extends State<AllPayment> {
                 : paymentProvider.paymentOptionModel.status == 200
                     ? paymentProvider.paymentOptionModel.result != null
                         ? ((kIsWeb) ? _buildWebPayments() : _buildPayments())
-                        : const NoData(
-                            title: 'no_payment', subTitle: 'no_payment_desc')
-                    : const NoData(
-                        title: 'no_payment', subTitle: 'no_payment_desc'),
+                        : const NoData(title: 'no_payment', subTitle: 'no_payment_desc')
+                    : const NoData(title: 'no_payment', subTitle: 'no_payment_desc'),
           ),
         ),
       ],
@@ -679,9 +638,7 @@ class AllPaymentState extends State<AllPayment> {
           /* /* Payments */ */
           /* In-App purchase */
           paymentProvider.paymentOptionModel.result?.inAppPurchage != null
-              ? paymentProvider.paymentOptionModel.result?.inAppPurchage
-                          ?.visibility ==
-                      "1"
+              ? paymentProvider.paymentOptionModel.result?.inAppPurchage?.visibility == "1"
                   ? Card(
                       semanticContainer: true,
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -696,8 +653,7 @@ class AllPaymentState extends State<AllPayment> {
                           await paymentProvider.setCurrentPayment("inapp");
                           openPayment(pgName: "inapppurchage");
                         },
-                        child: _buildPGButton(
-                            "pg_inapp.png", "InApp Purchase", 35, 110),
+                        child: _buildPGButton("pg_inapp.png", "InApp Purchase", 35, 110),
                       ),
                     )
                   : const SizedBox.shrink()
@@ -706,8 +662,7 @@ class AllPaymentState extends State<AllPayment> {
 
           /* Paypal */
           paymentProvider.paymentOptionModel.result?.paypal != null
-              ? paymentProvider.paymentOptionModel.result?.paypal?.visibility ==
-                      "1"
+              ? paymentProvider.paymentOptionModel.result?.paypal?.visibility == "1"
                   ? Card(
                       semanticContainer: true,
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -722,8 +677,7 @@ class AllPaymentState extends State<AllPayment> {
                           await paymentProvider.setCurrentPayment("paypal");
                           openPayment(pgName: "paypal");
                         },
-                        child:
-                            _buildPGButton("pg_paypal.png", "Paypal", 35, 130),
+                        child: _buildPGButton("pg_paypal.png", "Paypal", 35, 130),
                       ),
                     )
                   : const SizedBox.shrink()
@@ -732,9 +686,7 @@ class AllPaymentState extends State<AllPayment> {
 
           /* Razorpay */
           paymentProvider.paymentOptionModel.result?.razorpay != null
-              ? paymentProvider
-                          .paymentOptionModel.result?.razorpay?.visibility ==
-                      "1"
+              ? paymentProvider.paymentOptionModel.result?.razorpay?.visibility == "1"
                   ? Card(
                       semanticContainer: true,
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -749,8 +701,7 @@ class AllPaymentState extends State<AllPayment> {
                           await paymentProvider.setCurrentPayment("razorpay");
                           openPayment(pgName: "razorpay");
                         },
-                        child: _buildPGButton(
-                            "pg_razorpay.png", "Razorpay", 35, 130),
+                        child: _buildPGButton("pg_razorpay.png", "Razorpay", 35, 130),
                       ),
                     )
                   : const SizedBox.shrink()
@@ -759,8 +710,7 @@ class AllPaymentState extends State<AllPayment> {
 
           /* Paytm */
           paymentProvider.paymentOptionModel.result?.payTm != null
-              ? paymentProvider.paymentOptionModel.result?.payTm?.visibility ==
-                      "1"
+              ? paymentProvider.paymentOptionModel.result?.payTm?.visibility == "1"
                   ? Card(
                       semanticContainer: true,
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -781,12 +731,26 @@ class AllPaymentState extends State<AllPayment> {
                   : const SizedBox.shrink()
               : const SizedBox.shrink(),
           const SizedBox(height: 5),
-
+          Card(
+            semanticContainer: true,
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            elevation: 5,
+            color: lightBlack,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () async {
+                await paymentProvider.setCurrentPayment("paytm");
+                openPayment(pgName: "paytm");
+              },
+              child: _buildPGButton("pg_paytm.png", "Paytm", 30, 90),
+            ),
+          ),
           /* Flutterwave */
           paymentProvider.paymentOptionModel.result?.flutterWave != null
-              ? paymentProvider
-                          .paymentOptionModel.result?.flutterWave?.visibility ==
-                      "1"
+              ? paymentProvider.paymentOptionModel.result?.flutterWave?.visibility == "1"
                   ? Card(
                       semanticContainer: true,
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -798,12 +762,10 @@ class AllPaymentState extends State<AllPayment> {
                       child: InkWell(
                         borderRadius: BorderRadius.circular(8),
                         onTap: () async {
-                          await paymentProvider
-                              .setCurrentPayment("flutterwave");
+                          await paymentProvider.setCurrentPayment("flutterwave");
                           openPayment(pgName: "flutterwave");
                         },
-                        child: _buildPGButton(
-                            "pg_flutterwave.png", "Flutterwave", 35, 130),
+                        child: _buildPGButton("pg_flutterwave.png", "Flutterwave", 35, 130),
                       ),
                     )
                   : const SizedBox.shrink()
@@ -812,8 +774,7 @@ class AllPaymentState extends State<AllPayment> {
 
           /* Stripe */
           paymentProvider.paymentOptionModel.result?.stripe != null
-              ? paymentProvider.paymentOptionModel.result?.stripe?.visibility ==
-                      "1"
+              ? paymentProvider.paymentOptionModel.result?.stripe?.visibility == "1"
                   ? Card(
                       semanticContainer: true,
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -828,8 +789,7 @@ class AllPaymentState extends State<AllPayment> {
                           await paymentProvider.setCurrentPayment("stripe");
                           openPayment(pgName: "stripe");
                         },
-                        child:
-                            _buildPGButton("pg_stripe.png", "Stripe", 35, 100),
+                        child: _buildPGButton("pg_stripe.png", "Stripe", 35, 100),
                       ),
                     )
                   : const SizedBox.shrink()
@@ -838,9 +798,7 @@ class AllPaymentState extends State<AllPayment> {
 
           /* PayUMoney */
           paymentProvider.paymentOptionModel.result?.payUMoney != null
-              ? paymentProvider
-                          .paymentOptionModel.result?.payUMoney?.visibility ==
-                      "1"
+              ? paymentProvider.paymentOptionModel.result?.payUMoney?.visibility == "1"
                   ? Card(
                       semanticContainer: true,
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -855,8 +813,7 @@ class AllPaymentState extends State<AllPayment> {
                           await paymentProvider.setCurrentPayment("payumoney");
                           openPayment(pgName: "payumoney");
                         },
-                        child: _buildPGButton(
-                            "pg_payumoney.png", "PayU Money", 35, 130),
+                        child: _buildPGButton("pg_payumoney.png", "PayU Money", 35, 130),
                       ),
                     )
                   : const SizedBox.shrink()
@@ -864,8 +821,7 @@ class AllPaymentState extends State<AllPayment> {
 
           /* Cash */
           paymentProvider.paymentOptionModel.result?.cash != null
-              ? paymentProvider.paymentOptionModel.result?.cash?.visibility ==
-                      "1"
+              ? paymentProvider.paymentOptionModel.result?.cash?.visibility == "1"
                   ? Card(
                       semanticContainer: true,
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -885,6 +841,51 @@ class AllPaymentState extends State<AllPayment> {
                     )
                   : const SizedBox.shrink()
               : const SizedBox.shrink(),
+          Card(
+            semanticContainer: true,
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            elevation: 5,
+            color: lightBlack,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: InkWell(
+              onTap: () {
+                paymentProvider.onPhonePaySelect(context: context);
+              },
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 85),
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    SvgPicture.asset('assets/images/phone_pay_icon.svg'),
+                    Expanded(
+                      child: MyText(
+                        color: primaryColor,
+                        text: 'Phone pay',
+                        multilanguage: false,
+                        fontsizeNormal: 14,
+                        fontsizeWeb: 15,
+                        maxline: 2,
+                        overflow: TextOverflow.ellipsis,
+                        fontweight: FontWeight.w600,
+                        textalign: TextAlign.end,
+                        fontstyle: FontStyle.normal,
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    MyImage(
+                      imagePath: "ic_arrow_right.png",
+                      fit: BoxFit.fill,
+                      height: 22,
+                      width: 20,
+                      color: white,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
         ],
       ),
     );
@@ -938,9 +939,7 @@ class AllPaymentState extends State<AllPayment> {
 
           /* Razorpay */
           paymentProvider.paymentOptionModel.result?.razorpay != null
-              ? paymentProvider
-                          .paymentOptionModel.result?.razorpay?.visibility ==
-                      "1"
+              ? paymentProvider.paymentOptionModel.result?.razorpay?.visibility == "1"
                   ? Card(
                       semanticContainer: true,
                       clipBehavior: Clip.antiAliasWithSaveLayer,
@@ -955,8 +954,7 @@ class AllPaymentState extends State<AllPayment> {
                           await paymentProvider.setCurrentPayment("razorpay");
                           openPayment(pgName: "razorpay");
                         },
-                        child: _buildPGButton(
-                            "pg_razorpay.png", "Razorpay", 35, 130),
+                        child: _buildPGButton("pg_razorpay.png", "Razorpay", 35, 130),
                       ),
                     )
                   : const SizedBox.shrink()
@@ -967,8 +965,7 @@ class AllPaymentState extends State<AllPayment> {
     );
   }
 
-  Widget _buildPGButton(
-      String imageName, String pgName, double imgHeight, double imgWidth) {
+  Widget _buildPGButton(String imageName, String pgName, double imgHeight, double imgWidth) {
     return Container(
       constraints: const BoxConstraints(minHeight: 85),
       padding: const EdgeInsets.all(12),
@@ -1025,13 +1022,11 @@ class AllPaymentState extends State<AllPayment> {
 
     if (Platform.isIOS) {
       final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
-          _inAppPurchase
-              .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+          _inAppPurchase.getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
       await iosPlatformAddition.setDelegate(ExamplePaymentQueueDelegate());
     }
 
-    final ProductDetailsResponse productDetailResponse =
-        await _inAppPurchase.queryProductDetails(_kProductIds.toSet());
+    final ProductDetailsResponse productDetailResponse = await _inAppPurchase.queryProductDetails(_kProductIds.toSet());
     if (productDetailResponse.error != null) {
       setState(() {
         _queryProductError = productDetailResponse.error!.message;
@@ -1066,8 +1061,7 @@ class AllPaymentState extends State<AllPayment> {
 
   _initInAppPurchase() async {
     log("_initInAppPurchase _kProductIds ============> ${_kProductIds[0].toString()}");
-    final ProductDetailsResponse response =
-        await InAppPurchase.instance.queryProductDetails(_kProductIds.toSet());
+    final ProductDetailsResponse response = await InAppPurchase.instance.queryProductDetails(_kProductIds.toSet());
     if (response.notFoundIDs.isNotEmpty) {
       Utils.showToast("Please check SKU");
       return;
@@ -1075,17 +1069,14 @@ class AllPaymentState extends State<AllPayment> {
     log("productID ============> ${response.productDetails[0].id}");
     late PurchaseParam purchaseParam;
     if (Platform.isAndroid) {
-      purchaseParam =
-          GooglePlayPurchaseParam(productDetails: response.productDetails[0]);
+      purchaseParam = GooglePlayPurchaseParam(productDetails: response.productDetails[0]);
     } else {
       purchaseParam = PurchaseParam(productDetails: response.productDetails[0]);
     }
-    _inAppPurchase.buyConsumable(
-        purchaseParam: purchaseParam, autoConsume: false);
+    _inAppPurchase.buyConsumable(purchaseParam: purchaseParam, autoConsume: false);
   }
 
-  Future<void> _listenToPurchaseUpdated(
-      List<PurchaseDetails> purchaseDetailsList) async {
+  Future<void> _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) async {
     for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
       if (purchaseDetails.status == PurchaseStatus.pending) {
         showPendingUI();
@@ -1107,8 +1098,7 @@ class AllPaymentState extends State<AllPayment> {
         if (Platform.isAndroid) {
           if (!_kAutoConsume && purchaseDetails.productID == androidPackageID) {
             final InAppPurchaseAndroidPlatformAddition androidAddition =
-                _inAppPurchase.getPlatformAddition<
-                    InAppPurchaseAndroidPlatformAddition>();
+                _inAppPurchase.getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
             await androidAddition.consumePurchase(purchaseDetails);
           }
         }
@@ -1127,11 +1117,9 @@ class AllPaymentState extends State<AllPayment> {
       final List<String> consumables = await ConsumableStore.load();
       log("===> consumables $consumables");
       if (widget.payType == "Package") {
-        addTransaction(widget.itemId, widget.itemTitle,
-            paymentProvider.finalAmount, paymentId, widget.currency);
+        addTransaction(widget.itemId, widget.itemTitle, paymentProvider.finalAmount, paymentId, widget.currency);
       } else if (widget.payType == "Rent") {
-        addRentTransaction(widget.itemId, paymentProvider.finalAmount,
-            widget.typeId, widget.videoType);
+        addRentTransaction(widget.itemId, paymentProvider.finalAmount, widget.typeId, widget.videoType);
       }
       setState(() {
         _purchasePending = false;
@@ -1169,14 +1157,9 @@ class AllPaymentState extends State<AllPayment> {
     if (paymentProvider.paymentOptionModel.result?.razorpay != null) {
       Razorpay razorpay = Razorpay();
       var options = {
-        'key':
-            paymentProvider.paymentOptionModel.result?.razorpay?.isLive == "1"
-                ? paymentProvider
-                        .paymentOptionModel.result?.razorpay?.liveKey1 ??
-                    ""
-                : paymentProvider
-                        .paymentOptionModel.result?.razorpay?.testKey1 ??
-                    "",
+        'key': paymentProvider.paymentOptionModel.result?.razorpay?.isLive == "1"
+            ? paymentProvider.paymentOptionModel.result?.razorpay?.liveKey1 ?? ""
+            : paymentProvider.paymentOptionModel.result?.razorpay?.testKey1 ?? "",
         'currency': Constant.currency,
         'amount': (double.parse(paymentProvider.finalAmount ?? "") * 100),
         'name': widget.itemTitle ?? "",
@@ -1224,11 +1207,9 @@ class AllPaymentState extends State<AllPayment> {
     debugPrint("paymentId ========> $paymentId");
     Utils.showSnackbar(context, "success", "payment_success", true);
     if (widget.payType == "Package") {
-      addTransaction(widget.itemId, widget.itemTitle,
-          paymentProvider.finalAmount, paymentId, widget.currency);
+      addTransaction(widget.itemId, widget.itemTitle, paymentProvider.finalAmount, paymentId, widget.currency);
     } else if (widget.payType == "Rent") {
-      addRentTransaction(widget.itemId, paymentProvider.finalAmount,
-          widget.typeId, widget.videoType);
+      addRentTransaction(widget.itemId, paymentProvider.finalAmount, widget.typeId, widget.videoType);
     }
   }
 
@@ -1258,19 +1239,15 @@ class AllPaymentState extends State<AllPayment> {
       payTmIndustryTypeID = "Retail";
 
       if (paymentProvider.paymentOptionModel.result?.payTm?.isLive == "1") {
-        payTmMerchantID =
-            paymentProvider.paymentOptionModel.result?.payTm?.liveKey1 ?? "";
+        payTmMerchantID = paymentProvider.paymentOptionModel.result?.payTm?.liveKey1 ?? "";
         payTmIsStaging = false;
         payTmWebsite = "DEFAULT";
-        payTmCallbackURL =
-            "https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=$payTmOrderId";
+        payTmCallbackURL = "https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=$payTmOrderId";
       } else {
-        payTmMerchantID =
-            paymentProvider.paymentOptionModel.result?.payTm?.testKey1 ?? "";
+        payTmMerchantID = paymentProvider.paymentOptionModel.result?.payTm?.testKey1 ?? "";
         payTmIsStaging = true;
         payTmWebsite = "WEBSTAGING";
-        payTmCallbackURL =
-            "https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=$payTmOrderId";
+        payTmCallbackURL = "https://securegw.paytm.in/theia/paytmCallback?ORDER_ID=$payTmOrderId";
       }
       var sendMap = <String, dynamic>{
         "mid": payTmMerchantID,
@@ -1351,30 +1328,13 @@ class AllPaymentState extends State<AllPayment> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (BuildContext context) => UsePaypal(
-              sandboxMode: (paymentProvider
-                              .paymentOptionModel.result?.paypal?.isLive ??
-                          "") ==
-                      "1"
-                  ? false
-                  : true,
-              clientId:
-                  paymentProvider.paymentOptionModel.result?.paypal?.isLive ==
-                          "1"
-                      ? paymentProvider
-                              .paymentOptionModel.result?.paypal?.liveKey1 ??
-                          ""
-                      : paymentProvider
-                              .paymentOptionModel.result?.paypal?.testKey1 ??
-                          "",
-              secretKey: paymentProvider
-                          .paymentOptionModel.result?.paypal?.isLive ==
-                      "1"
-                  ? paymentProvider
-                          .paymentOptionModel.result?.paypal?.liveKey2 ??
-                      ""
-                  : paymentProvider
-                          .paymentOptionModel.result?.paypal?.testKey2 ??
-                      "",
+              sandboxMode: (paymentProvider.paymentOptionModel.result?.paypal?.isLive ?? "") == "1" ? false : true,
+              clientId: paymentProvider.paymentOptionModel.result?.paypal?.isLive == "1"
+                  ? paymentProvider.paymentOptionModel.result?.paypal?.liveKey1 ?? ""
+                  : paymentProvider.paymentOptionModel.result?.paypal?.testKey1 ?? "",
+              secretKey: paymentProvider.paymentOptionModel.result?.paypal?.isLive == "1"
+                  ? paymentProvider.paymentOptionModel.result?.paypal?.liveKey2 ?? ""
+                  : paymentProvider.paymentOptionModel.result?.paypal?.testKey2 ?? "",
               returnURL: "return.example.com",
               cancelURL: "cancel.example.com",
               transactions: [
@@ -1382,11 +1342,7 @@ class AllPaymentState extends State<AllPayment> {
                   "amount": {
                     "total": '${paymentProvider.finalAmount}',
                     "currency": "USD" /* Constant.currency */,
-                    "details": {
-                      "subtotal": '${paymentProvider.finalAmount}',
-                      "shipping": '0',
-                      "shipping_discount": 0
-                    }
+                    "details": {"subtotal": '${paymentProvider.finalAmount}', "shipping": '0', "shipping_discount": 0}
                   },
                   "description": "The payment transaction description.",
                   "item_list": {
@@ -1405,21 +1361,15 @@ class AllPaymentState extends State<AllPayment> {
               onSuccess: (params) async {
                 debugPrint("onSuccess: ${params["paymentId"]}");
                 if (widget.payType == "Package") {
-                  addTransaction(
-                      widget.itemId,
-                      widget.itemTitle,
-                      paymentProvider.finalAmount,
-                      params["paymentId"],
+                  addTransaction(widget.itemId, widget.itemTitle, paymentProvider.finalAmount, params["paymentId"],
                       widget.currency);
                 } else if (widget.payType == "Rent") {
-                  addRentTransaction(widget.itemId, paymentProvider.finalAmount,
-                      widget.typeId, widget.videoType);
+                  addRentTransaction(widget.itemId, paymentProvider.finalAmount, widget.typeId, widget.videoType);
                 }
               },
               onError: (params) {
                 debugPrint("onError: ${params["message"]}");
-                Utils.showSnackbar(
-                    context, "fail", params["message"].toString(), false);
+                Utils.showSnackbar(context, "fail", params["message"].toString(), false);
               },
               onCancel: (params) {
                 debugPrint('cancelled: $params');
@@ -1437,15 +1387,12 @@ class AllPaymentState extends State<AllPayment> {
   /* ********* Stripe START ********* */
   Future<void> _stripeInit() async {
     if (paymentProvider.paymentOptionModel.result?.stripe != null) {
-      stripe.Stripe.publishableKey = paymentProvider
-                  .paymentOptionModel.result?.stripe?.isLive ==
-              "1"
+      stripe.Stripe.publishableKey = paymentProvider.paymentOptionModel.result?.stripe?.isLive == "1"
           ? paymentProvider.paymentOptionModel.result?.stripe?.liveKey1 ?? ""
           : paymentProvider.paymentOptionModel.result?.stripe?.testKey1 ?? "";
       try {
         //STEP 1: Create Payment Intent
-        paymentIntent = await createPaymentIntent(
-            paymentProvider.finalAmount ?? "", Constant.currency);
+        paymentIntent = await createPaymentIntent(paymentProvider.finalAmount ?? "", Constant.currency);
 
         //STEP 2: Initialize Payment Sheet
         await stripe.Stripe.instance
@@ -1502,11 +1449,9 @@ class AllPaymentState extends State<AllPayment> {
       await stripe.Stripe.instance.presentPaymentSheet().then((value) {
         Utils.showSnackbar(context, "success", "payment_success", true);
         if (widget.payType == "Package") {
-          addTransaction(widget.itemId, widget.itemTitle,
-              paymentProvider.finalAmount, paymentId, widget.currency);
+          addTransaction(widget.itemId, widget.itemTitle, paymentProvider.finalAmount, paymentId, widget.currency);
         } else if (widget.payType == "Rent") {
-          addRentTransaction(widget.itemId, paymentProvider.finalAmount,
-              widget.typeId, widget.videoType);
+          addRentTransaction(widget.itemId, paymentProvider.finalAmount, widget.typeId, widget.videoType);
         }
 
         paymentIntent = null;
@@ -1547,8 +1492,7 @@ class AllPaymentState extends State<AllPayment> {
 
 class ExamplePaymentQueueDelegate implements SKPaymentQueueDelegateWrapper {
   @override
-  bool shouldContinueTransaction(
-      SKPaymentTransactionWrapper transaction, SKStorefrontWrapper storefront) {
+  bool shouldContinueTransaction(SKPaymentTransactionWrapper transaction, SKStorefrontWrapper storefront) {
     return true;
   }
 

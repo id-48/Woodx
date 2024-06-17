@@ -87,7 +87,7 @@ class _FooterWebState extends State<FooterWeb> {
                 alignment: Alignment.centerLeft,
                 child: MyImage(
                   fit: BoxFit.fill,
-                  imagePath: "appicon.png",
+                  imagePath: "ic_stat_onesignal_default.png",
                 ),
               ),
               const SizedBox(height: 8),
@@ -215,7 +215,7 @@ class _FooterWebState extends State<FooterWeb> {
           alignment: Alignment.centerLeft,
           child: MyImage(
             fit: BoxFit.fill,
-            imagePath: "appicon.png",
+            imagePath: "ic_stat_onesignal_default.png",
           ),
         ),
         const SizedBox(height: 8),

@@ -331,7 +331,7 @@ class LoginSocialState extends State<LoginSocial> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const SignUp(),
+                      builder: (context) => const SignUpScreen(),
                     ),
                   );
                 },
@@ -355,7 +355,7 @@ class LoginSocialState extends State<LoginSocial> {
                   alignment: Alignment.center,
                   child: MyText(
                     color: white,
-                    text: "loginWithEmail",
+                    text: "login_with_email",
                     multilanguage: true,
                     fontsizeNormal: 17,
                     fontsizeWeb: 19,

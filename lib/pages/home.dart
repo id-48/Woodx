@@ -31,6 +31,8 @@ import 'package:wood_vip/widget/mynetworkimg.dart';
 import 'package:wood_vip/widget/mytext.dart';
 import 'package:wood_vip/widget/nodata.dart';
 
+import '../webservice/apiservices.dart';
+
 class Home extends StatefulWidget {
   final String? pageName;
 
@@ -49,13 +51,7 @@ class HomeState extends State<Home> {
   late ListObserverController observerController;
   late HomeProvider homeProvider;
   int? videoId, videoType, typeId;
-  String? currentPage,
-      langCatName,
-      aboutUsUrl,
-      privacyUrl,
-      termsConditionUrl,
-      refundPolicyUrl,
-      mSearchText;
+  String? currentPage, langCatName, aboutUsUrl, privacyUrl, termsConditionUrl, refundPolicyUrl, mSearchText;
 
   _onItemTapped(String page) async {
     debugPrint("_onItemTapped -----------------> $page");
@@ -69,11 +65,9 @@ class HomeState extends State<Home> {
 
   @override
   void initState() {
-    sectionDataProvider =
-        Provider.of<SectionDataProvider>(context, listen: false);
+    sectionDataProvider = Provider.of<SectionDataProvider>(context, listen: false);
     homeProvider = Provider.of<HomeProvider>(context, listen: false);
-    observerController =
-        ListObserverController(controller: tabScrollController);
+    observerController = ListObserverController(controller: tabScrollController);
     currentPage = widget.pageName ?? "";
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -88,29 +82,21 @@ class HomeState extends State<Home> {
   _handleNotificationOpened(OSNotificationOpenedResult result) {
     /* id, video_type, type_id */
 
-    debugPrint(
-        "setNotificationOpenedHandler additionalData ===> ${result.notification.additionalData.toString()}");
-    debugPrint(
-        "setNotificationOpenedHandler video_id ===> ${result.notification.additionalData?['id']}");
+    debugPrint("setNotificationOpenedHandler additionalData ===> ${result.notification.additionalData.toString()}");
+    debugPrint("setNotificationOpenedHandler video_id ===> ${result.notification.additionalData?['id']}");
     debugPrint(
         "setNotificationOpenedHandler upcoming_type ===> ${result.notification.additionalData?['upcoming_type']}");
-    debugPrint(
-        "setNotificationOpenedHandler video_type ===> ${result.notification.additionalData?['video_type']}");
-    debugPrint(
-        "setNotificationOpenedHandler type_id ===> ${result.notification.additionalData?['type_id']}");
+    debugPrint("setNotificationOpenedHandler video_type ===> ${result.notification.additionalData?['video_type']}");
+    debugPrint("setNotificationOpenedHandler type_id ===> ${result.notification.additionalData?['type_id']}");
 
     if (result.notification.additionalData?['id'] != null &&
         result.notification.additionalData?['upcoming_type'] != null &&
         result.notification.additionalData?['video_type'] != null &&
         result.notification.additionalData?['type_id'] != null) {
-      String? videoID =
-          result.notification.additionalData?['id'].toString() ?? "";
-      String? upcomingType =
-          result.notification.additionalData?['upcoming_type'].toString() ?? "";
-      String? videoType =
-          result.notification.additionalData?['video_type'].toString() ?? "";
-      String? typeID =
-          result.notification.additionalData?['type_id'].toString() ?? "";
+      String? videoID = result.notification.additionalData?['id'].toString() ?? "";
+      String? upcomingType = result.notification.additionalData?['upcoming_type'].toString() ?? "";
+      String? videoType = result.notification.additionalData?['video_type'].toString() ?? "";
+      String? typeID = result.notification.additionalData?['type_id'].toString() ?? "";
       log("videoID =======> $videoID");
       log("upcomingType ==> $upcomingType");
       log("videoType =====> $videoType");
@@ -133,11 +119,9 @@ class HomeState extends State<Home> {
     await homeProvider.getSectionType();
 
     if (!homeProvider.loading) {
-      if (homeProvider.sectionTypeModel.status == 200 &&
-          homeProvider.sectionTypeModel.result != null) {
+      if (homeProvider.sectionTypeModel.status == 200 && homeProvider.sectionTypeModel.result != null) {
         if ((homeProvider.sectionTypeModel.result?.length ?? 0) > 0) {
-          if ((sectionDataProvider.sectionBannerModel.result?.length ?? 0) ==
-                  0 ||
+          if ((sectionDataProvider.sectionBannerModel.result?.length ?? 0) == 0 ||
               (sectionDataProvider.sectionListModel.result?.length ?? 0) == 0) {
             getTabData(0, homeProvider.sectionTypeModel.result);
           }
@@ -157,10 +141,8 @@ class HomeState extends State<Home> {
     debugPrint("setSelectedTab tabPos ====> $tabPos");
     if (!mounted) return;
     await homeProvider.setSelectedTab(tabPos);
-    debugPrint(
-        "setSelectedTab selectedIndex ====> ${homeProvider.selectedIndex}");
-    debugPrint(
-        "setSelectedTab lastTabPosition ====> ${sectionDataProvider.lastTabPosition}");
+    debugPrint("setSelectedTab selectedIndex ====> ${homeProvider.selectedIndex}");
+    debugPrint("setSelectedTab lastTabPosition ====> ${sectionDataProvider.lastTabPosition}");
     if (sectionDataProvider.lastTabPosition == tabPos) {
       return;
     } else {
@@ -168,21 +150,17 @@ class HomeState extends State<Home> {
     }
   }
 
-  Future<void> getTabData(
-      int position, List<type.Result>? sectionTypeList) async {
+  Future<void> getTabData(int position, List<type.Result>? sectionTypeList) async {
     debugPrint("getTabData position ====> $position");
     await setSelectedTab(position);
     await sectionDataProvider.setLoading(true);
     await sectionDataProvider.getSectionBanner(
-        position == 0 ? "0" : (sectionTypeList?[position - 1].id),
-        position == 0 ? "1" : "2");
+        position == 0 ? "0" : (sectionTypeList?[position - 1].id), position == 0 ? "1" : "2");
     await sectionDataProvider.getSectionList(
-        position == 0 ? "0" : (sectionTypeList?[position - 1].id),
-        position == 0 ? "1" : "2");
+        position == 0 ? "0" : (sectionTypeList?[position - 1].id), position == 0 ? "1" : "2");
   }
 
-  openDetailPage(String pageName, int videoId, int upcomingType, int videoType,
-      int typeId) async {
+  openDetailPage(String pageName, int videoId, int upcomingType, int videoType, int typeId) async {
     debugPrint("pageName =======> $pageName");
     debugPrint("videoId ========> $videoId");
     debugPrint("upcomingType ===> $upcomingType");
@@ -220,9 +198,7 @@ class HomeState extends State<Home> {
     return Scaffold(
       backgroundColor: appBgColor,
       body: SafeArea(
-        child: (kIsWeb || Constant.isTV)
-            ? _webAppBarWithDetails()
-            : _mobileAppBarWithDetails(),
+        child: (kIsWeb || Constant.isTV) ? _webAppBarWithDetails() : _mobileAppBarWithDetails(),
       ),
     );
   }
@@ -248,8 +224,7 @@ class HomeState extends State<Home> {
                   onTap: () async {
                     await getTabData(0, homeProvider.sectionTypeModel.result);
                   },
-                  child: MyImage(
-                      width: 140, height: 140, imagePath: "appicon.png"),
+                  child: MyImage(width: 140, height: 140, imagePath: "appicon.png"),
                 ),
               ),
               // This is the title in the app bar.
@@ -287,8 +262,7 @@ class HomeState extends State<Home> {
       return ShimmerUtils.buildHomeMobileShimmer(context);
     } else {
       if (homeProvider.sectionTypeModel.status == 200) {
-        if (homeProvider.sectionTypeModel.result != null ||
-            (homeProvider.sectionTypeModel.result?.length ?? 0) > 0) {
+        if (homeProvider.sectionTypeModel.result != null || (homeProvider.sectionTypeModel.result?.length ?? 0) > 0) {
           return Stack(
             children: [
               // _clickToRedirect(pageName: currentPage ?? ""),
@@ -334,9 +308,7 @@ class HomeState extends State<Home> {
                 child: Container(
                   constraints: const BoxConstraints(maxHeight: 32),
                   decoration: Utils.setBackground(
-                    homeProvider.selectedIndex == index
-                        ? white
-                        : transparentColor,
+                    homeProvider.selectedIndex == index ? white : transparentColor,
                     20,
                   ),
                   alignment: Alignment.center,
@@ -347,8 +319,7 @@ class HomeState extends State<Home> {
                     text: index == 0
                         ? "Home"
                         : index > 0
-                            ? (sectionTypeList?[index - 1].name.toString() ??
-                                "")
+                            ? (sectionTypeList?[index - 1].name.toString() ?? "")
                             : "",
                     fontsizeNormal: 12,
                     fontweight: FontWeight.w700,
@@ -381,8 +352,7 @@ class HomeState extends State<Home> {
             Consumer<SectionDataProvider>(
               builder: (context, sectionDataProvider, child) {
                 if (sectionDataProvider.loadingBanner) {
-                  if ((kIsWeb || Constant.isTV) &&
-                      MediaQuery.of(context).size.width > 720) {
+                  if ((kIsWeb || Constant.isTV) && MediaQuery.of(context).size.width > 720) {
                     return ShimmerUtils.bannerWeb(context);
                   } else {
                     return ShimmerUtils.bannerMobile(context);
@@ -390,13 +360,10 @@ class HomeState extends State<Home> {
                 } else {
                   if (sectionDataProvider.sectionBannerModel.status == 200 &&
                       sectionDataProvider.sectionBannerModel.result != null) {
-                    if ((kIsWeb || Constant.isTV) &&
-                        MediaQuery.of(context).size.width > 720) {
-                      return _webHomeBanner(
-                          sectionDataProvider.sectionBannerModel.result);
+                    if ((kIsWeb || Constant.isTV) && MediaQuery.of(context).size.width > 720) {
+                      return _webHomeBanner(sectionDataProvider.sectionBannerModel.result);
                     } else {
-                      return _mobileHomeBanner(
-                          sectionDataProvider.sectionBannerModel.result);
+                      return _mobileHomeBanner(sectionDataProvider.sectionBannerModel.result);
                     }
                   } else {
                     return const SizedBox.shrink();
@@ -415,17 +382,13 @@ class HomeState extends State<Home> {
                     return Column(
                       children: [
                         /* Continue Watching */
-                        (sectionDataProvider
-                                    .sectionListModel.continueWatching !=
-                                null)
-                            ? continueWatchingLayout(sectionDataProvider
-                                .sectionListModel.continueWatching)
+                        (sectionDataProvider.sectionListModel.continueWatching != null)
+                            ? continueWatchingLayout(sectionDataProvider.sectionListModel.continueWatching)
                             : const SizedBox.shrink(),
 
                         /* Remaining Sections */
                         (sectionDataProvider.sectionListModel.result != null)
-                            ? setSectionByType(
-                                sectionDataProvider.sectionListModel.result)
+                            ? setSectionByType(sectionDataProvider.sectionListModel.result)
                             : const SizedBox.shrink(),
                       ],
                     );
@@ -450,8 +413,7 @@ class HomeState extends State<Home> {
     return Column(
       children: [
         /* Continue Watching */
-        if (Constant.userID != null && homeProvider.selectedIndex == 0)
-          ShimmerUtils.continueWatching(context),
+        if (Constant.userID != null && homeProvider.selectedIndex == 0) ShimmerUtils.continueWatching(context),
 
         /* Remaining Sections */
         ListView.builder(
@@ -493,26 +455,21 @@ class HomeState extends State<Home> {
                 autoPlay: true,
                 autoPlayCurve: Curves.linear,
                 enableInfiniteScroll: true,
-                autoPlayInterval:
-                    Duration(milliseconds: Constant.bannerDuration),
-                autoPlayAnimationDuration:
-                    Duration(milliseconds: Constant.animationDuration),
+                autoPlayInterval: Duration(milliseconds: Constant.bannerDuration),
+                autoPlayAnimationDuration: Duration(milliseconds: Constant.animationDuration),
                 viewportFraction: 1.0,
                 onPageChanged: (val, _) async {
                   await sectionDataProvider.setCurrentBanner(val);
                 },
               ),
-              itemBuilder:
-                  (BuildContext context, int index, int pageViewIndex) {
+              itemBuilder: (BuildContext context, int index, int pageViewIndex) {
                 return InkWell(
                   focusColor: white,
                   borderRadius: BorderRadius.circular(0),
                   onTap: () {
                     log("Clicked on index ==> $index");
                     openDetailPage(
-                      (sectionBannerList?[index].videoType ?? 0) == 2
-                          ? "showdetail"
-                          : "videodetail",
+                      (sectionBannerList?[index].videoType ?? 0) == 2 ? "showdetail" : "videodetail",
                       sectionBannerList?[index].id ?? 0,
                       sectionBannerList?[index].upcomingType ?? 0,
                       sectionBannerList?[index].videoType ?? 0,
@@ -598,8 +555,7 @@ class HomeState extends State<Home> {
             autoPlayCurve: Curves.easeInOutQuart,
             enableInfiniteScroll: true,
             autoPlayInterval: Duration(milliseconds: Constant.bannerDuration),
-            autoPlayAnimationDuration:
-                Duration(milliseconds: Constant.animationDuration),
+            autoPlayAnimationDuration: Duration(milliseconds: Constant.animationDuration),
             viewportFraction: 0.95,
             onPageChanged: (val, _) async {
               await sectionDataProvider.setCurrentBanner(val);
@@ -612,9 +568,7 @@ class HomeState extends State<Home> {
               onTap: () {
                 log("Clicked on index ==> $index");
                 openDetailPage(
-                  (sectionBannerList?[index].videoType ?? 0) == 2
-                      ? "showdetail"
-                      : "videodetail",
+                  (sectionBannerList?[index].videoType ?? 0) == 2 ? "showdetail" : "videodetail",
                   sectionBannerList?[index].id ?? 0,
                   sectionBannerList?[index].upcomingType ?? 0,
                   sectionBannerList?[index].videoType ?? 0,
@@ -630,8 +584,7 @@ class HomeState extends State<Home> {
                     alignment: AlignmentDirectional.centerEnd,
                     children: [
                       SizedBox(
-                        width: MediaQuery.of(context).size.width *
-                            (Dimens.webBannerImgPr),
+                        width: MediaQuery.of(context).size.width * (Dimens.webBannerImgPr),
                         height: Dimens.homeWebBanner,
                         child: MyNetworkImage(
                           imageUrl: sectionBannerList?[index].landscape ?? "",
@@ -670,11 +623,9 @@ class HomeState extends State<Home> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Container(
-                              width: MediaQuery.of(context).size.width *
-                                  (1.0 - Dimens.webBannerImgPr),
+                              width: MediaQuery.of(context).size.width * (1.0 - Dimens.webBannerImgPr),
                               constraints: const BoxConstraints(minHeight: 0),
-                              padding:
-                                  const EdgeInsets.fromLTRB(35, 50, 55, 35),
+                              padding: const EdgeInsets.fromLTRB(35, 50, 55, 35),
                               alignment: Alignment.centerLeft,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
@@ -695,9 +646,7 @@ class HomeState extends State<Home> {
                                   const SizedBox(height: 12),
                                   MyText(
                                     color: whiteLight,
-                                    text: sectionBannerList?[index]
-                                            .categoryName ??
-                                        "",
+                                    text: sectionBannerList?[index].categoryName ?? "",
                                     textalign: TextAlign.start,
                                     fontsizeNormal: 14,
                                     fontweight: FontWeight.w600,
@@ -711,19 +660,13 @@ class HomeState extends State<Home> {
                                   Expanded(
                                     child: MyText(
                                       color: whiteLight,
-                                      text: sectionBannerList?[index]
-                                              .description ??
-                                          "",
+                                      text: sectionBannerList?[index].description ?? "",
                                       textalign: TextAlign.start,
                                       fontsizeNormal: 14,
                                       fontweight: FontWeight.w600,
                                       fontsizeWeb: 15,
                                       multilanguage: false,
-                                      maxline:
-                                          (MediaQuery.of(context).size.width <
-                                                  1000)
-                                              ? 2
-                                              : 5,
+                                      maxline: (MediaQuery.of(context).size.width < 1000) ? 2 : 5,
                                       overflow: TextOverflow.ellipsis,
                                       fontstyle: FontStyle.normal,
                                     ),
@@ -793,9 +736,7 @@ class HomeState extends State<Home> {
                       onTap: () {
                         log("Clicked on index ==> $index");
                         openDetailPage(
-                          (continueWatchingList?[index].videoType ?? 0) == 2
-                              ? "showdetail"
-                              : "videodetail",
+                          (continueWatchingList?[index].videoType ?? 0) == 2 ? "showdetail" : "videodetail",
                           (continueWatchingList?[index].videoType ?? 0) == 2
                               ? (continueWatchingList?[index].showId ?? 0)
                               : (continueWatchingList?[index].id ?? 0),
@@ -812,8 +753,7 @@ class HomeState extends State<Home> {
                           borderRadius: BorderRadius.circular(4),
                           clipBehavior: Clip.antiAliasWithSaveLayer,
                           child: MyNetworkImage(
-                            imageUrl:
-                                continueWatchingList?[index].landscape ?? "",
+                            imageUrl: continueWatchingList?[index].landscape ?? "",
                             fit: BoxFit.cover,
                             imgHeight: MediaQuery.of(context).size.height,
                             imgWidth: MediaQuery.of(context).size.width,
@@ -831,8 +771,7 @@ class HomeState extends State<Home> {
                           child: InkWell(
                             borderRadius: BorderRadius.circular(20),
                             onTap: () async {
-                              openPlayer(
-                                  "ContinueWatch", index, continueWatchingList);
+                              openPlayer("ContinueWatch", index, continueWatchingList);
                             },
                             child: MyImage(
                               width: 30,
@@ -849,16 +788,14 @@ class HomeState extends State<Home> {
                             padding: const EdgeInsets.all(0),
                             barRadius: const Radius.circular(2),
                             lineHeight: 4,
-                            percent: Utils.getPercentage(
-                                continueWatchingList?[index].videoDuration ?? 0,
+                            percent: Utils.getPercentage(continueWatchingList?[index].videoDuration ?? 0,
                                 continueWatchingList?[index].stopTime ?? 0),
                             backgroundColor: secProgressColor,
                             progressColor: primaryColor,
                           ),
                         ),
                         (continueWatchingList?[index].releaseTag != null &&
-                                (continueWatchingList?[index].releaseTag ?? "")
-                                    .isNotEmpty)
+                                (continueWatchingList?[index].releaseTag ?? "").isNotEmpty)
                             ? Container(
                                 decoration: const BoxDecoration(
                                   color: black,
@@ -874,9 +811,7 @@ class HomeState extends State<Home> {
                                 child: MyText(
                                   color: white,
                                   multilanguage: false,
-                                  text:
-                                      continueWatchingList?[index].releaseTag ??
-                                          "",
+                                  text: continueWatchingList?[index].releaseTag ?? "",
                                   textalign: TextAlign.center,
                                   fontsizeNormal: 6,
                                   fontweight: FontWeight.w700,
@@ -907,8 +842,7 @@ class HomeState extends State<Home> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (BuildContext context, int index) {
-        if (sectionList?[index].data != null &&
-            (sectionList?[index].data?.length ?? 0) > 0) {
+        if (sectionList?[index].data != null && (sectionList?[index].data?.length ?? 0) > 0) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -947,57 +881,42 @@ class HomeState extends State<Home> {
     );
   }
 
-  Widget setSectionData(
-      {required List<list.Result>? sectionList, required int index}) {
+  Widget setSectionData({required List<list.Result>? sectionList, required int index}) {
     /* video_type =>  1-video,  2-show,  3-language,  4-category */
     /* screen_layout =>  landscape, potrait, square */
     if ((sectionList?[index].videoType ?? 0) == 1) {
       if ((sectionList?[index].screenLayout ?? "") == "landscape") {
-        return landscape(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return landscape(sectionList?[index].upcomingType, sectionList?[index].data);
       } else if ((sectionList?[index].screenLayout ?? "") == "potrait") {
-        return portrait(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return portrait(sectionList?[index].upcomingType, sectionList?[index].data);
       } else if ((sectionList?[index].screenLayout ?? "") == "square") {
-        return square(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return square(sectionList?[index].upcomingType, sectionList?[index].data);
       } else {
-        return landscape(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return landscape(sectionList?[index].upcomingType, sectionList?[index].data);
       }
     } else if ((sectionList?[index].videoType ?? 0) == 2) {
       if ((sectionList?[index].screenLayout ?? "") == "landscape") {
-        return landscape(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return landscape(sectionList?[index].upcomingType, sectionList?[index].data);
       } else if ((sectionList?[index].screenLayout ?? "") == "potrait") {
-        return portrait(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return portrait(sectionList?[index].upcomingType, sectionList?[index].data);
       } else if ((sectionList?[index].screenLayout ?? "") == "square") {
-        return square(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return square(sectionList?[index].upcomingType, sectionList?[index].data);
       } else {
-        return landscape(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return landscape(sectionList?[index].upcomingType, sectionList?[index].data);
       }
     } else if ((sectionList?[index].videoType ?? 0) == 3) {
-      return languageLayout(
-          sectionList?[index].typeId ?? 0, sectionList?[index].data);
+      return languageLayout(sectionList?[index].typeId ?? 0, sectionList?[index].data);
     } else if ((sectionList?[index].videoType ?? 0) == 4) {
-      return genresLayout(
-          sectionList?[index].typeId ?? 0, sectionList?[index].data);
+      return genresLayout(sectionList?[index].typeId ?? 0, sectionList?[index].data);
     } else {
       if ((sectionList?[index].screenLayout ?? "") == "landscape") {
-        return landscape(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return landscape(sectionList?[index].upcomingType, sectionList?[index].data);
       } else if ((sectionList?[index].screenLayout ?? "") == "potrait") {
-        return portrait(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return portrait(sectionList?[index].upcomingType, sectionList?[index].data);
       } else if ((sectionList?[index].screenLayout ?? "") == "square") {
-        return square(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return square(sectionList?[index].upcomingType, sectionList?[index].data);
       } else {
-        return landscape(
-            sectionList?[index].upcomingType, sectionList?[index].data);
+        return landscape(sectionList?[index].upcomingType, sectionList?[index].data);
       }
     }
   }
@@ -1046,9 +965,7 @@ class HomeState extends State<Home> {
             onTap: () {
               log("Clicked on index ==> $index");
               openDetailPage(
-                (sectionDataList?[index].videoType ?? 0) == 2
-                    ? "showdetail"
-                    : "videodetail",
+                (sectionDataList?[index].videoType ?? 0) == 2 ? "showdetail" : "videodetail",
                 sectionDataList?[index].id ?? 0,
                 upcomingType ?? 0,
                 sectionDataList?[index].videoType ?? 0,
@@ -1095,9 +1012,7 @@ class HomeState extends State<Home> {
             onTap: () {
               log("Clicked on index ==> $index");
               openDetailPage(
-                (sectionDataList?[index].videoType ?? 0) == 2
-                    ? "showdetail"
-                    : "videodetail",
+                (sectionDataList?[index].videoType ?? 0) == 2 ? "showdetail" : "videodetail",
                 sectionDataList?[index].id ?? 0,
                 upcomingType ?? 0,
                 sectionDataList?[index].videoType ?? 0,
@@ -1144,9 +1059,7 @@ class HomeState extends State<Home> {
             onTap: () {
               log("Clicked on index ==> $index");
               openDetailPage(
-                (sectionDataList?[index].videoType ?? 0) == 2
-                    ? "showdetail"
-                    : "videodetail",
+                (sectionDataList?[index].videoType ?? 0) == 2 ? "showdetail" : "videodetail",
                 sectionDataList?[index].id ?? 0,
                 upcomingType ?? 0,
                 sectionDataList?[index].videoType ?? 0,
@@ -1221,8 +1134,7 @@ class HomeState extends State<Home> {
                         borderRadius: BorderRadius.circular(4),
                         clipBehavior: Clip.antiAliasWithSaveLayer,
                         child: MyNetworkImage(
-                          imageUrl:
-                              sectionDataList?[index].image.toString() ?? "",
+                          imageUrl: sectionDataList?[index].image.toString() ?? "",
                           fit: BoxFit.fill,
                           imgHeight: MediaQuery.of(context).size.height,
                           imgWidth: MediaQuery.of(context).size.width,
@@ -1317,8 +1229,7 @@ class HomeState extends State<Home> {
                         borderRadius: BorderRadius.circular(4),
                         clipBehavior: Clip.antiAliasWithSaveLayer,
                         child: MyNetworkImage(
-                          imageUrl:
-                              sectionDataList?[index].image.toString() ?? "",
+                          imageUrl: sectionDataList?[index].image.toString() ?? "",
                           fit: BoxFit.fill,
                           imgHeight: MediaQuery.of(context).size.height,
                           imgWidth: MediaQuery.of(context).size.width,
@@ -1368,8 +1279,7 @@ class HomeState extends State<Home> {
   }
 
   /* ========= Open Player ========= */
-  openPlayer(String playType, int index,
-      List<ContinueWatching>? continueWatchingList) async {
+  openPlayer(String playType, int index, List<ContinueWatching>? continueWatchingList) async {
     debugPrint("index ==========> $index");
     /* Set-up Quality URLs */
     Utils.setQualityURLs(
@@ -1380,8 +1290,7 @@ class HomeState extends State<Home> {
     );
     var isContinues = await Utils.openPlayer(
       context: context,
-      playType:
-          (continueWatchingList?[index].videoType ?? 0) == 2 ? "Show" : "Video",
+      playType: (continueWatchingList?[index].videoType ?? 0) == 2 ? "Show" : "Video",
       videoId: (continueWatchingList?[index].videoType ?? 0) == 2
           ? (continueWatchingList?[index].showId ?? 0)
           : (continueWatchingList?[index].id ?? 0),

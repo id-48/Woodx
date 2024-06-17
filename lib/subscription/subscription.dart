@@ -7,7 +7,6 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:wood_vip/model/subscriptionmodel.dart';
-import 'package:wood_vip/pages/loginsocial.dart';
 import 'package:wood_vip/provider/subscriptionprovider.dart';
 import 'package:wood_vip/shimmer/shimmerutils.dart';
 import 'package:wood_vip/subscription/allpayment.dart';
@@ -19,6 +18,8 @@ import 'package:wood_vip/webwidget/footerweb.dart';
 import 'package:wood_vip/widget/myimage.dart';
 import 'package:wood_vip/widget/mytext.dart';
 import 'package:wood_vip/widget/nodata.dart';
+
+import '../utils/sharedpre.dart';
 
 class Subscription extends StatefulWidget {
   const Subscription({
@@ -32,11 +33,12 @@ class Subscription extends StatefulWidget {
 class SubscriptionState extends State<Subscription> {
   late SubscriptionProvider subscriptionProvider;
   CarouselController pageController = CarouselController();
+  SharedPre pref = SharedPre();
 
   @override
   void initState() {
-    subscriptionProvider =
-        Provider.of<SubscriptionProvider>(context, listen: false);
+    subscriptionProvider = Provider.of<SubscriptionProvider>(context, listen: false);
+
     super.initState();
     _getData();
   }
@@ -48,6 +50,9 @@ class SubscriptionState extends State<Subscription> {
       if (!mounted) return;
       setState(() {});
     });
+    await pref.remove("amount");
+    await pref.remove("userId");
+    await pref.remove("packageId");
   }
 
   @override
@@ -56,47 +61,70 @@ class SubscriptionState extends State<Subscription> {
   }
 
   _checkAndPay(List<Result>? packageList, int index) async {
-    if (Constant.userID != null) {
-      for (var i = 0; i < (packageList?.length ?? 0); i++) {
-        if (packageList?[i].isBuy == 1) {
-          debugPrint("<============= Purchaged =============>");
-          Utils.showSnackbar(context, "info", "already_purchased", true);
-          return;
-        }
-      }
-      if (packageList?[index].isBuy == 0) {
-        await Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              return AllPayment(
-                payType: 'Package',
-                itemId: packageList?[index].id.toString() ?? '',
-                price: packageList?[index].price.toString() ?? '',
-                itemTitle: packageList?[index].name.toString() ?? '',
-                typeId: '',
-                videoType: '',
-                productPackage: '',
-                currency: '',
-              );
-            },
-          ),
-        );
-      }
-    } else {
-      if ((kIsWeb || Constant.isTV)) {
-        Utils.buildWebAlertDialog(context, "login", "");
-        return;
-      }
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) {
-            return const LoginSocial();
-          },
-        ),
-      );
-    }
+    await pref.save("amount", packageList?[index].price.toString());
+    await pref.save("userId", Constant.userID.toString());
+    await pref.save("packageId", packageList?[index].id.toString());
+    await Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return AllPayment(
+            payType: 'Package',
+            itemId: packageList?[index].id.toString() ?? '',
+            price: packageList?[index].price.toString() ?? '',
+            itemTitle: packageList?[index].name.toString() ?? '',
+            typeId: '',
+            videoType: '',
+            productPackage: '',
+            currency: '',
+          );
+        },
+      ),
+    );
+    // if (Constant.userID != null) {
+    //   for (var i = 0; i < (packageList?.length ?? 0); i++) {
+    //     if (packageList?[i].isBuy == 1) {
+    //       debugPrint("<============= Purchaged =============>");
+    //       Utils.showSnackbar(context, "info", "already_purchased", true);
+    //       return;
+    //     }
+    //   }
+    //   await pref.save("amount", packageList?[index].price.toString());
+    //   await pref.save("userId", Constant.userID.toString());
+    //   await pref.save("packageId", packageList?[index].id.toString());
+    //   if (packageList?[index].isBuy == 0) {
+    //     await Navigator.pushReplacement(
+    //       context,
+    //       MaterialPageRoute(
+    //         builder: (context) {
+    //           return AllPayment(
+    //             payType: 'Package',
+    //             itemId: packageList?[index].id.toString() ?? '',
+    //             price: packageList?[index].price.toString() ?? '',
+    //             itemTitle: packageList?[index].name.toString() ?? '',
+    //             typeId: '',
+    //             videoType: '',
+    //             productPackage: '',
+    //             currency: '',
+    //           );
+    //         },
+    //       ),
+    //     );
+    //   }
+    // } else {
+    //   if ((kIsWeb || Constant.isTV)) {
+    //     Utils.buildWebAlertDialog(context, "login", "");
+    //     return;
+    //   }
+    //   await Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder: (context) {
+    //         return const LoginSocial();
+    //       },
+    //     ),
+    //   );
+    // }
   }
 
   @override
@@ -121,8 +149,7 @@ class SubscriptionState extends State<Subscription> {
 
   Widget _buildSubscription() {
     if (subscriptionProvider.loading) {
-      if ((kIsWeb || Constant.isTV) &&
-          MediaQuery.of(context).size.width > 720) {
+      if ((kIsWeb || Constant.isTV) && MediaQuery.of(context).size.width > 720) {
         return ShimmerUtils.buildSubscribeWebShimmer(context);
       } else {
         return ShimmerUtils.buildSubscribeShimmer(context);
@@ -131,11 +158,7 @@ class SubscriptionState extends State<Subscription> {
       if (subscriptionProvider.subscriptionModel.status == 200) {
         return Column(
           children: [
-            SizedBox(
-                height: ((kIsWeb || Constant.isTV) &&
-                        MediaQuery.of(context).size.width > 720)
-                    ? 40
-                    : 12),
+            SizedBox(height: ((kIsWeb || Constant.isTV) && MediaQuery.of(context).size.width > 720) ? 40 : 12),
             Container(
               width: MediaQuery.of(context).size.width,
               padding: const EdgeInsets.only(left: 20, right: 20),
@@ -153,11 +176,7 @@ class SubscriptionState extends State<Subscription> {
                 fontstyle: FontStyle.normal,
               ),
             ),
-            SizedBox(
-                height: ((kIsWeb || Constant.isTV) &&
-                        MediaQuery.of(context).size.width > 720)
-                    ? 40
-                    : 12),
+            SizedBox(height: ((kIsWeb || Constant.isTV) && MediaQuery.of(context).size.width > 720) ? 40 : 12),
 
             /* Remaining Data */
             _buildItems(subscriptionProvider.subscriptionModel.result),
@@ -219,9 +238,7 @@ class SubscriptionState extends State<Subscription> {
                         children: [
                           Expanded(
                             child: MyText(
-                              color: (packageList[index].isBuy == 1
-                                  ? black
-                                  : primaryColor),
+                              color: (packageList[index].isBuy == 1 ? black : primaryColor),
                               text: packageList[index].name ?? "",
                               textalign: TextAlign.start,
                               fontsizeNormal: 18,
@@ -235,9 +252,7 @@ class SubscriptionState extends State<Subscription> {
                           ),
                           const SizedBox(width: 5),
                           MyText(
-                            color: (packageList[index].isBuy == 1
-                                ? black
-                                : primaryColor),
+                            color: (packageList[index].isBuy == 1 ? black : primaryColor),
                             text:
                                 "${Constant.currencySymbol} ${packageList[index].price.toString()} / ${packageList[index].time.toString()} ${packageList[index].type.toString()}",
                             textalign: TextAlign.center,
@@ -280,9 +295,7 @@ class SubscriptionState extends State<Subscription> {
                           width: MediaQuery.of(context).size.width * 0.5,
                           padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                           decoration: BoxDecoration(
-                            color: (packageList[index].isBuy == 1
-                                ? white
-                                : primaryColor),
+                            color: (packageList[index].isBuy == 1 ? white : primaryColor),
                             borderRadius: BorderRadius.circular(5),
                           ),
                           alignment: Alignment.center,
@@ -290,9 +303,7 @@ class SubscriptionState extends State<Subscription> {
                             builder: (context, subscriptionProvider, child) {
                               return MyText(
                                 color: black,
-                                text: (packageList[index].isBuy == 1)
-                                    ? "current"
-                                    : "chooseplan",
+                                text: (packageList[index].isBuy == 1) ? "current" : "chooseplan",
                                 textalign: TextAlign.center,
                                 fontsizeNormal: 16,
                                 fontsizeWeb: 20,
@@ -325,9 +336,7 @@ class SubscriptionState extends State<Subscription> {
       return Container(
         padding: const EdgeInsets.only(left: 30, right: 30, bottom: 15),
         child: ResponsiveGridList(
-          minItemWidth: (MediaQuery.of(context).size.width > 720)
-              ? Dimens.widthPackageWeb
-              : Dimens.widthPackage,
+          minItemWidth: (MediaQuery.of(context).size.width > 720) ? Dimens.widthPackageWeb : Dimens.widthPackage,
           verticalGridSpacing: 8,
           horizontalGridSpacing: 6,
           minItemsPerRow: 1,
@@ -357,9 +366,7 @@ class SubscriptionState extends State<Subscription> {
                         children: [
                           Expanded(
                             child: MyText(
-                              color: (packageList[index].isBuy == 1
-                                  ? black
-                                  : primaryColor),
+                              color: (packageList[index].isBuy == 1 ? black : primaryColor),
                               text: packageList[index].name ?? "",
                               textalign: TextAlign.start,
                               fontsizeNormal: 18,
@@ -373,9 +380,7 @@ class SubscriptionState extends State<Subscription> {
                           ),
                           const SizedBox(width: 5),
                           MyText(
-                            color: (packageList[index].isBuy == 1
-                                ? black
-                                : primaryColor),
+                            color: (packageList[index].isBuy == 1 ? black : primaryColor),
                             text:
                                 "${Constant.currencySymbol} ${packageList[index].price.toString()} / ${packageList[index].time.toString()} ${packageList[index].type.toString()}",
                             textalign: TextAlign.center,
@@ -419,9 +424,7 @@ class SubscriptionState extends State<Subscription> {
                             height: 45,
                             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                             decoration: BoxDecoration(
-                              color: (packageList[index].isBuy == 1
-                                  ? white
-                                  : primaryColor),
+                              color: (packageList[index].isBuy == 1 ? white : primaryColor),
                               borderRadius: BorderRadius.circular(5),
                             ),
                             alignment: Alignment.center,
@@ -429,9 +432,7 @@ class SubscriptionState extends State<Subscription> {
                               builder: (context, subscriptionProvider, child) {
                                 return MyText(
                                   color: black,
-                                  text: (packageList[index].isBuy == 1)
-                                      ? "current"
-                                      : "chooseplan",
+                                  text: (packageList[index].isBuy == 1) ? "current" : "chooseplan",
                                   textalign: TextAlign.center,
                                   fontsizeNormal: 16,
                                   fontsizeWeb: 20,
@@ -461,8 +462,7 @@ class SubscriptionState extends State<Subscription> {
   }
 
   Widget _buildBenefits(List<Result>? packageList, int? index) {
-    if (packageList?[index ?? 0].data != null &&
-        (packageList?[index ?? 0].data?.length ?? 0) > 0) {
+    if (packageList?[index ?? 0].data != null && (packageList?[index ?? 0].data?.length ?? 0) > 0) {
       return AlignedGridView.count(
         shrinkWrap: true,
         crossAxisCount: 1,
@@ -480,11 +480,8 @@ class SubscriptionState extends State<Subscription> {
               children: [
                 Expanded(
                   child: MyText(
-                    color: (packageList?[index ?? 0].isBuy == 1
-                        ? black
-                        : otherColor),
-                    text: packageList?[index ?? 0].data?[position].packageKey ??
-                        "",
+                    color: (packageList?[index ?? 0].isBuy == 1 ? black : otherColor),
+                    text: packageList?[index ?? 0].data?[position].packageKey ?? "",
                     textalign: TextAlign.start,
                     multilanguage: false,
                     fontsizeNormal: 15,
@@ -496,42 +493,21 @@ class SubscriptionState extends State<Subscription> {
                   ),
                 ),
                 const SizedBox(width: 20),
-                ((packageList?[index ?? 0].data?[position].packageValue ??
-                                "") ==
-                            "1" ||
-                        (packageList?[index ?? 0]
-                                    .data?[position]
-                                    .packageValue ??
-                                "") ==
-                            "0")
+                ((packageList?[index ?? 0].data?[position].packageValue ?? "") == "1" ||
+                        (packageList?[index ?? 0].data?[position].packageValue ?? "") == "0")
                     ? MyImage(
                         width: 23,
                         height: 23,
-                        color: (packageList?[index ?? 0]
-                                        .data?[position]
-                                        .packageValue ??
-                                    "") ==
-                                "1"
-                            ? (packageList?[index ?? 0].isBuy == 1
-                                ? black
-                                : primaryColor)
+                        color: (packageList?[index ?? 0].data?[position].packageValue ?? "") == "1"
+                            ? (packageList?[index ?? 0].isBuy == 1 ? black : primaryColor)
                             : redColor,
-                        imagePath: (packageList?[index ?? 0]
-                                        .data?[position]
-                                        .packageValue ??
-                                    "") ==
-                                "1"
+                        imagePath: (packageList?[index ?? 0].data?[position].packageValue ?? "") == "1"
                             ? "tick_mark.png"
                             : "cross_mark.png",
                       )
                     : MyText(
-                        color: (packageList?[index ?? 0].isBuy == 1
-                            ? black
-                            : otherColor),
-                        text: packageList?[index ?? 0]
-                                .data?[position]
-                                .packageValue ??
-                            "",
+                        color: (packageList?[index ?? 0].isBuy == 1 ? black : otherColor),
+                        text: packageList?[index ?? 0].data?[position].packageValue ?? "",
                         textalign: TextAlign.center,
                         fontsizeNormal: 16,
                         fontsizeWeb: 24,

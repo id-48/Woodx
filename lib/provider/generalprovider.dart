@@ -15,6 +15,7 @@ class GeneralProvider extends ChangeNotifier {
   LoginRegisterModel loginSocialModel = LoginRegisterModel();
   LoginRegisterModel loginOTPModel = LoginRegisterModel();
   LoginRegisterModel loginTVModel = LoginRegisterModel();
+  LoginRegisterModel loginSignInModel = LoginRegisterModel();
 
   bool loading = false;
 

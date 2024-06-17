@@ -30,6 +30,8 @@ import 'package:wood_vip/model/videobyidmodel.dart';
 import 'package:wood_vip/model/watchlistmodel.dart';
 import 'package:wood_vip/utils/constant.dart';
 
+import '../model/res_buy_plan.dart';
+
 class ApiService {
   String baseUrl = Constant.baseurl;
 
@@ -90,8 +92,7 @@ class ApiService {
 
   /* type => 1-Facebook, 2-Google, 4-Google */
   // login API
-  Future<LoginRegisterModel> loginWithSocial(
-      email, name, type, File? profileImg) async {
+  Future<LoginRegisterModel> loginWithSocial(email, name, type, File? profileImg) async {
     log("email :==> $email");
     log("name :==> $name");
     log("type :==> $type");
@@ -306,8 +307,7 @@ class ApiService {
   }
 
   // section_detail API
-  Future<SectionDetailModel> sectionDetails(
-      typeId, videoType, videoId, upcomingType) async {
+  Future<SectionDetailModel> sectionDetails(typeId, videoType, videoId, upcomingType) async {
     SectionDetailModel sectionDetailModel;
     String sectionList = "section_detail";
     Response response = await dio.post(
@@ -406,8 +406,7 @@ class ApiService {
   /* user_id, video_id, video_type, type_id, other_id
      * Show :=> ("video_id" = Session's ID)  AND  ("other_id" = Show's ID)
      * Video :=> ("other_id" = "0") */
-  Future<SuccessModel> addRemoveDownload(
-      videoId, videoType, typeId, otherId) async {
+  Future<SuccessModel> addRemoveDownload(videoId, videoType, typeId, otherId) async {
     SuccessModel successModel;
     String addRemoveDownload = "add_remove_download";
     Response response = await dio.post(
@@ -597,6 +596,32 @@ class ApiService {
     return subscriptionModel;
   }
 
+  // check_status_payment
+  Future checkPaymentStatus({required String paymentPanId}) async {
+    log('subscriptionPackage userID ==>>> ${Constant.userID}');
+    String getPackage = "phonepay_check_status";
+
+    print('URL :::${'$baseUrl$getPackage'}');
+    Response response = await dio.post(
+      '$baseUrl$getPackage',
+      data: {
+        'payment_id': paymentPanId,
+      },
+    );
+    log('Url check status url===>::$baseUrl$getPackage\n response :: ${response.data}');
+  }
+
+  /// phone pay
+  Future<ResBuyPlan> phonePayApiCall(
+      {required String userId, required String amount, required String packageId}) async {
+    var data = {"user_id": userId, "amount": amount, "package_id": packageId};
+
+    ResBuyPlan resBuyPlan;
+    Response response = await dio.post('$baseUrl${'phonepay_initiate_payment'}', options: optHeaders, data: data);
+    resBuyPlan = ResBuyPlan.fromJson(response.data);
+    return resBuyPlan;
+  }
+
   // get_bookmark_video API
   Future<WatchlistModel> watchlist() async {
     log("watchlist userID :==> ${Constant.userID}");
@@ -651,8 +676,7 @@ class ApiService {
   }
 
   // apply_coupon API
-  Future<CouponModel> applyRentCoupon(
-      couponCode, videoId, typeId, videoType, price) async {
+  Future<CouponModel> applyRentCoupon(couponCode, videoId, typeId, videoType, price) async {
     CouponModel couponModel;
     String applyCoupon = "apply_coupon";
     log("applyRentCoupon API :==> $baseUrl$applyCoupon");
@@ -675,8 +699,8 @@ class ApiService {
   }
 
   // get_payment_token API
-  Future<PayTmModel> getPaytmToken(merchantID, orderId, custmoreID, channelID,
-      txnAmount, website, callbackURL, industryTypeID) async {
+  Future<PayTmModel> getPaytmToken(
+      merchantID, orderId, custmoreID, channelID, txnAmount, website, callbackURL, industryTypeID) async {
     PayTmModel payTmModel;
     String paytmToken = "get_payment_token";
     log("paytmToken API :==> $baseUrl$paytmToken");
@@ -700,8 +724,7 @@ class ApiService {
   }
 
   // add_transaction API
-  Future<SuccessModel> addTransaction(packageId, description, amount, paymentId,
-      currencyCode, couponCode) async {
+  Future<SuccessModel> addTransaction(packageId, description, amount, paymentId, currencyCode, couponCode) async {
     log('addTransaction userID ==>>> ${Constant.userID}');
     log('addTransaction packageId ==>>> $packageId');
     log('addTransaction description ==>>> $description');
@@ -729,8 +752,7 @@ class ApiService {
   }
 
   // add_rent_transaction API
-  Future<SuccessModel> addRentTransaction(
-      videoId, price, typeId, videoType, couponCode) async {
+  Future<SuccessModel> addRentTransaction(videoId, price, typeId, videoType, couponCode) async {
     log('addRentTransaction userID ==>>> ${Constant.userID}');
     log('addRentTransaction video_id ==>>> $videoId');
     log('addRentTransaction price ==>>> $price');

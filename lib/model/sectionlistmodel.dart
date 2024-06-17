@@ -80,7 +80,7 @@ class ContinueWatching {
   int? isRent;
   int? rentPrice;
   String? languageId;
-  int? channelId;
+  String? channelId;
   String? categoryId;
   String? categoryName;
   int? typeId;
@@ -200,7 +200,7 @@ class ContinueWatching {
         isRent: json["is_rent"],
         rentPrice: json["rent_price"],
         languageId: json["language_id"],
-        channelId: json["channel_id"],
+        channelId: json["channel_id"].toString(),
         categoryId: json["category_id"],
         categoryName: json["category_name"],
         typeId: json["type_id"],
