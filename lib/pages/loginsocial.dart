@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:wood_vip/pages/bottombar.dart';
 import 'package:wood_vip/pages/otpverify.dart';
+import 'package:wood_vip/pages/signup.dart';
 import 'package:wood_vip/provider/generalprovider.dart';
 import 'package:wood_vip/provider/homeprovider.dart';
 import 'package:wood_vip/provider/sectiondataprovider.dart';
@@ -323,6 +324,50 @@ class LoginSocialState extends State<LoginSocial> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 10),
+              /* Login With Email and password */
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SignUp(),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(18),
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        primaryLight,
+                        primaryDark,
+                      ],
+                      begin: FractionalOffset(0.0, 0.0),
+                      end: FractionalOffset(1.0, 0.0),
+                      stops: [0.0, 1.0],
+                      tileMode: TileMode.clamp,
+                    ),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  alignment: Alignment.center,
+                  child: MyText(
+                    color: white,
+                    text: "loginWithEmail",
+                    multilanguage: true,
+                    fontsizeNormal: 17,
+                    fontsizeWeb: 19,
+                    fontweight: FontWeight.w700,
+                    maxline: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textalign: TextAlign.center,
+                    fontstyle: FontStyle.normal,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
 
               /* Apple Login Button */
               if (Platform.isIOS)

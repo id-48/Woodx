@@ -4,7 +4,7 @@ class Constant {
   static const String baseurl =
       'https://phplaravel-1281383-4639657.cloudwaysapps.com/api/';
 
-  static String? appName = "Wood VIP";
+  static String? appName = "Wood X Vip";
   static String? appPackageName = "com.woodx.vip";
   static String? appleAppId = "6449380090";
   static String? appVersion = "1";

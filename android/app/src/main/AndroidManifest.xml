@@ -53,7 +53,7 @@
         android:enableOnBackInvokedCallback="true"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="Wood VIP"
+        android:label="Wood X Vip"
         android:largeHeap="true"
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true"
